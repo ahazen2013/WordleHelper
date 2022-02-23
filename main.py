@@ -11,12 +11,11 @@ GUESSES = "wordle-allowed-guesses.txt"          # https://gist.github.com/cfresh
 # arguments: the word guessed by the user, the pattern of green/yellow/black squares provided by the game, and the list
 #   of words being filtered
 def filter_words(wor, pat, word_list):
-    c = ['_', '_', '_', '_', '_']       # These first couple blocks of code figure out where each letter in the provided
+    c = ['_', '_', '_', '_', '_']       # This first block of code figures out where each letter in the provided
     u = ['_', '_', '_', '_', '_']       # word is or is not in the answer word, based on the pattern provided
     deconfirmed = ""
     if wor in word_list:
         word_list.remove(wor)
-
     for i in range(5):
         if pat[i] == 'g':
             c[i] = wor[i]
@@ -25,13 +24,12 @@ def filter_words(wor, pat, word_list):
         if pat[i] == 'b':
             if wor[i] not in c and wor[i] not in u and wor[i] not in wor[:i] and wor[i] not in wor[i+1:]:
                 deconfirmed += wor[i]
-
     confirmed = "".join(c)
     unconfirmed = "".join(u)
     deconfirmed += '_' * (5-len(deconfirmed))
 
     i = 0
-    while i < len(word_list):
+    while i < len(word_list):                                       # the second code block does the actual filtering
         for j in range(5):
             if confirmed[j] != '_' and word_list[i][j] != confirmed[j]:     # if there are letters which have confirmed
                 word_list.remove(word_list[i])                              # positions in the answer, and the correct
@@ -59,17 +57,14 @@ def filter_words(wor, pat, word_list):
 #   the word (ex. lf['a'] = [3, 0, 2, 0, 0, 1] means that 'a' appeared 3 times overall, twice as the second letter in
 #   a word, and once as the fifth letter in a word)
 def frequency_analysis(wl):
-    lf = {}         # letter frequency dictionary to be returned
-
-    for i in range(0, 26):  # initialize the dictionary with each letter as a key
+    lf = {}                                         # letter frequency dictionary to be returned
+    for i in range(0, 26):                          # initialize the dictionary with each letter as a key
         lf[chr(97 + i)] = [0, 0, 0, 0, 0, 0]
-
-    for word in wl:
+    for word in wl:                                 # tally up the letter frequencies
         for i in range(5):
             letter = word[i]
             lf[letter][0] += 1
             lf[letter][i+1] += 1
-
     return lf
 
 
@@ -77,42 +72,31 @@ if __name__ == '__main__':
     obj = open(ANSWERS)             # initialize list of answers
     answer_list = obj.readlines()
     obj.close()
-
     obj = open(GUESSES)             # initialize list of guesses
     guess_list = obj.readlines()
     obj.close()
-
-    letter_frequency = {}
-    for i in range(len(guess_list)-1):              # strip each word of the newline character (the last word does not
-        guess_list[i] = guess_list[i][:-1]          # have a newline character)
-    for i in range(len(answer_list)-1):         # strip each word of the newline character, and add the list of answers
-        answer_list[i] = answer_list[i][:-1]    # to the list of possible guesses
+    for i in range(len(guess_list)-1):              # strip each word of the newline character
+        guess_list[i] = guess_list[i][:-1]          # (the last word does not have a newline character)
+    for i in range(len(answer_list)-1):         # strip each word of the newline character, and add the
+        answer_list[i] = answer_list[i][:-1]    # list of answers to the list of possible guesses
         guess_list.append(answer_list[i])
-
-    temp = []
-    suggestions = []
-    suggestion = ''
 
     print('Welcome to Wordle Helper!')
     while True:
         word = input('What was your guess?\n').lower()
         pattern = input('What was the color pattern? For example, if the first letter was green, the second was yellow,'
                         ' and the other three were black, you would type GYBBB:\n').lower()
-
         filter_words(word, pattern, guess_list)     # filter words that are no longer viable
         filter_words(word, pattern, answer_list)
         suggestions = guess_list.copy()
         letter_frequency = frequency_analysis(guess_list)
-
         best_score = 0
         if len(suggestions) > 8:            # unless we're down to a few possible solutions,
             for i in guess_list:            # remove words with duplicate letters
                 if len(set(i)) < 5:
                     suggestions.remove(i)
-
         if len(suggestions) == 0:   # if all viable answers contain duplicate letters, the list of suggestions resets
             suggestions = guess_list.copy()
-
         for i in suggestions:
             score = 0
             if i in answer_list:
@@ -120,7 +104,7 @@ if __name__ == '__main__':
             for j in range(5):
                 score += letter_frequency[i[j]][j+1]    # this is equivalent to the % frequency with which the letter
             if score > best_score:                      # is in a given position multiplied by the number of times
-                best_score = score                      # a letter appears in the word list
+                best_score = score                      # the letter appears in the word list
                 suggestion = i
 
         print('You should try guessing:', suggestion.upper())
