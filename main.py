@@ -32,26 +32,21 @@ def filter_words(wor, pat, word_list):
 
     i = 0
     while i < len(word_list):
-        # print('analyzing', word_list[i])
         for j in range(5):
             if confirmed[j] != '_' and word_list[i][j] != confirmed[j]:     # if there are letters which have confirmed
-                # print(word_list[i], 'removed because', confirmed[j], 'is not in position', j+1)
                 word_list.remove(word_list[i])                              # positions in the answer, and the correct
                 i -= 1                                                      # letter is not in that position in the
                 break                                                       # guess word, the word is removed
             if unconfirmed[j] != '_':
                 if word_list[i][j] == unconfirmed[j]:                       # if there are letters which are in the
-                    # print(word_list[i], 'removed because', unconfirmed[j], 'is in position', j+1)
                     word_list.remove(word_list[i])                          # answer, but their position is unknown,
                     i -= 1                                                  # the guess word is removed if the guess
                     break                                                   # word has that letter in the position it is
                 if unconfirmed[j] not in word_list[i]:                      # confirmed not to be in the answer, or if
-                    # print(word_list[i], 'removed because', unconfirmed[j], 'is not in the word')
                     word_list.remove(word_list[i])                          # the word does not contain that letter
                     i -= 1
                     break
             if deconfirmed[j] != '_' and deconfirmed[j] in word_list[i]:    # if there are letters which are confirmed
-                # print(word_list[i], 'removed because', deconfirmed[j], 'is in the word')
                 word_list.remove(word_list[i])                              # not to be in the answer, and the guess
                 i -= 1                                                      # word contains any of those letters, the
                 break                                                       # guess word is removed
@@ -94,39 +89,36 @@ if __name__ == '__main__':
         answer_list[i] = answer_list[i][:-1]    # to the list of possible guesses
         guess_list.append(answer_list[i])
 
-    viable_answers = answer_list.copy()         # copy answer and guess lists, so that we can reuse them later
-    viable_guesses = guess_list.copy()
     temp = []
     suggestions = []
     suggestion = ''
 
     print('Welcome to Wordle Helper!')
     while True:
-        print(len(viable_answers))
         word = input('What was your guess?\n').lower()
         pattern = input('What was the color pattern? For example, if the first letter was green, the second was yellow,'
                         ' and the other three were black, you would type GYBBB:\n').lower()
 
-        filter_words(word, pattern, viable_guesses)     # filter words that are no longer viable
-        filter_words(word, pattern, viable_answers)
-        suggestions = viable_guesses.copy()
-        letter_frequency = frequency_analysis(viable_guesses)
+        filter_words(word, pattern, guess_list)     # filter words that are no longer viable
+        filter_words(word, pattern, answer_list)
+        suggestions = guess_list.copy()
+        letter_frequency = frequency_analysis(guess_list)
 
         best_score = 0
         if len(suggestions) > 8:            # unless we're down to a few possible solutions,
-            for i in viable_guesses:        # remove words with duplicate letters
+            for i in guess_list:            # remove words with duplicate letters
                 if len(set(i)) < 5:
                     suggestions.remove(i)
 
         if len(suggestions) == 0:   # if all viable answers contain duplicate letters, the list of suggestions resets
-            suggestions = viable_guesses.copy()
+            suggestions = guess_list.copy()
 
         for i in suggestions:
             score = 0
-            if i in viable_answers:
+            if i in answer_list:
                 score += 50    # guess words in the answer list are more heavily weighted when fewer guess words remain
             for j in range(5):
-                score += letter_frequency[i[j]][j+1]    # this is equivalent to the frequency with which the letter
+                score += letter_frequency[i[j]][j+1]    # this is equivalent to the % frequency with which the letter
             if score > best_score:                      # is in a given position multiplied by the number of times
                 best_score = score                      # a letter appears in the word list
                 suggestion = i
