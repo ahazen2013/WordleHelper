@@ -23,7 +23,7 @@ def filter_words(wor, pat, word_list):
         if pat[i] == 'y':
             u[i] = wor[i]
         if pat[i] == 'b':
-            if wor[i] not in c and wor[i] not in u:
+            if wor[i] not in c and wor[i] not in u and wor[i] not in wor[:i] and wor[i] not in wor[i+1:]:
                 deconfirmed += wor[i]
 
     confirmed = "".join(c)
