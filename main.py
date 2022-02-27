@@ -3,19 +3,23 @@ ANSWERS = "wordle-answers-alphabetical.txt"     # https://gist.github.com/cfresh
 GUESSES = "wordle-allowed-guesses.txt"          # https://gist.github.com/cfreshman/cdcdf777450c5b5301e439061d29694c
 
 
-# TODO: work on duplicate letters
-# could improperly leave in words that have 2 letters the answer is confirmed to only have 1 of
-#   ex: TASTY/GGBBB would not filter out TAROT
-# could improperly leave in words that have 1 instance of a double letter that exists in the answer
-#   ex: FUSSY/YBYYB would not filter out SAFER
 # arguments: the word guessed by the user, the pattern of green/yellow/black squares provided by the game, and the list
 #   of words being filtered
+# returns: None
 def filter_words(wor, pat, word_list):
     c = ['_', '_', '_', '_', '_']       # This first block of code figures out where each letter in the provided
     u = ['_', '_', '_', '_', '_']       # word is or is not in the answer word, based on the pattern provided
     deconfirmed = ""
-    if wor in word_list:
-        word_list.remove(wor)
+    dups_dic = {}
+    dup_check = ''
+    if len(set(wor)) < 5:
+        for i in range(5):
+            if pat[i] != 'b':
+                if wor[i] in dups_dic.keys():
+                    dups_dic[wor[i]] += 1
+                    dup_check += wor[i]
+                else:
+                    dups_dic[wor[i]] = 1
     for i in range(5):
         if pat[i] == 'g':
             c[i] = wor[i]
@@ -48,6 +52,15 @@ def filter_words(wor, pat, word_list):
                 word_list.remove(word_list[i])                              # not to be in the answer, and the guess
                 i -= 1                                                      # word contains any of those letters, the
                 break                                                       # guess word is removed
+            if word_list[i][j] in dup_check:                                            # if the letter being examined
+                if word_list[i].count(word_list[i][j]) < dups_dic[word_list[i][j]]:     # is a duplicate letter in the
+                    word_list.remove(word_list[i])                                      # answer, but not in the guess
+                    i -= 1                                                              # word, the word is removed
+                    break
+            if dup_check == '' and word_list[i][j] in dups_dic.keys() and word_list[i].count(word_list[i][j]) > 1:
+                word_list.remove(word_list[i])                  # if the letter being examined is a duplicate in the
+                i -= 1                                          # guess word, but is confirmed to not be a duplicate
+                break                                           # in the answer, the word is removed
         i += 1
 
 
