@@ -96,6 +96,7 @@ def click1(event):
     elif color == GREEN:
         b1["bg"] = GRAY
 
+
 def click2(event):
     color = b2["bg"]
     if color == GRAY:
@@ -104,6 +105,7 @@ def click2(event):
         b2["bg"] = GREEN
     elif color == GREEN:
         b2["bg"] = GRAY
+
 
 def click3(event):
     color = b3["bg"]
@@ -114,6 +116,7 @@ def click3(event):
     elif color == GREEN:
         b3["bg"] = GRAY
 
+
 def click4(event):
     color = b4["bg"]
     if color == GRAY:
@@ -122,6 +125,7 @@ def click4(event):
         b4["bg"] = GREEN
     elif color == GREEN:
         b4["bg"] = GRAY
+
 
 def click5(event):
     color = b5["bg"]
@@ -144,14 +148,55 @@ def callback(*args):
 
 
 def sub(event):
+    result = entry.get()
     colors = [b1["bg"], b2["bg"], b3["bg"], b4["bg"], b5["bg"]]
-    suggestion["text"] = 'You should try: ALAST'
+    for i in range(5):
+        if colors[i] == GRAY:
+            colors[i] = 'b'
+        elif colors[i] == YELLOW:
+            colors[i] = 'y'
+        elif colors[i] == GREEN:
+            colors[i] = 'g'
+    filter_words(result, colors, guess_list)  # filter words that are no longer viable
+    filter_words(result, colors, answer_list)
+    suggestions = guess_list.copy()
+    letter_frequency = frequency_analysis(guess_list)
+    best_score = 0
+    if len(suggestions) > 8:  # unless we're down to a few possible solutions,
+        for i in guess_list:  # remove words with duplicate letters
+            if len(set(i)) < 5:
+                suggestions.remove(i)
+    if len(suggestions) == 0:  # if all viable answers contain duplicate letters, the list of suggestions resets
+        suggestions = guess_list.copy()
+    for i in suggestions:
+        score = 0
+        if i in answer_list:
+            score += 50  # guess words in the answer list are more heavily weighted when fewer guess words remain
+        for j in range(5):
+            score += letter_frequency[i[j]][j + 1]  # this is equivalent to the % frequency with which the letter
+        if score > best_score:  # is in a given position multiplied by the number of times
+            best_score = score  # the letter appears in the word list
+            suggestion = i
+    sug["text"] = suggestion.upper()
 
 
 if __name__ == '__main__':
+    obj = open(ANSWERS)  # initialize list of answers
+    answer_list = obj.readlines()
+    obj.close()
+    obj = open(GUESSES)  # initialize list of guesses
+    guess_list = obj.readlines()
+    obj.close()
+    for i in range(len(guess_list) - 1):  # strip each word of the newline character
+        guess_list[i] = guess_list[i][:-1]  # (the last word does not have a newline character)
+    for i in range(len(answer_list) - 1):  # strip each word of the newline character, and add the
+        answer_list[i] = answer_list[i][:-1]  # list of answers to the list of possible guesses
+        guess_list.append(answer_list[i])
+
     window = tk.Tk()
     window.title("Wordle Helper")
     window.geometry("600x350")
+    window.grid_columnconfigure((0, 6), weight=1)
     b1 = tk.Button(
         width=3,
         height=1,
@@ -197,7 +242,6 @@ if __name__ == '__main__':
     b3.bind("<Button-1>", click3)
     b4.bind("<Button-1>", click4)
     b5.bind("<Button-1>", click5)
-    window.grid_columnconfigure((0, 6), weight=1)
     b1.grid(row=0, column=1, padx=1, pady=30)
     b2.grid(row=0, column=2, padx=1, pady=30)
     b3.grid(row=0, column=3, padx=1, pady=30)
@@ -216,47 +260,6 @@ if __name__ == '__main__':
         master=window)
     submit.bind("<Button-1>", sub)
     submit.grid(row=2, column=2, columnspan=3)
-    suggestion = tk.Label(text='Please enter your guess.')
-    suggestion.grid(row=3, column=2, columnspan=3, pady=15)
-    print(entry.get())
+    sug = tk.Label(text='Please enter your guess.')
+    sug.grid(row=3, column=2, columnspan=3, pady=15)
     window.mainloop()
-
-    obj = open(ANSWERS)  # initialize list of answers
-    answer_list = obj.readlines()
-    obj.close()
-    obj = open(GUESSES)  # initialize list of guesses
-    guess_list = obj.readlines()
-    obj.close()
-    for i in range(len(guess_list) - 1):  # strip each word of the newline character
-        guess_list[i] = guess_list[i][:-1]  # (the last word does not have a newline character)
-    for i in range(len(answer_list) - 1):  # strip each word of the newline character, and add the
-        answer_list[i] = answer_list[i][:-1]  # list of answers to the list of possible guesses
-        guess_list.append(answer_list[i])
-
-    print('Welcome to Wordle Helper!')
-    while True:
-        word = input('What was your guess?\n').lower()
-        pattern = input('What was the color pattern? For example, if the first letter was green, the second was yellow,'
-                        ' and the other three were black, you would type GYBBB:\n').lower()
-        filter_words(word, pattern, guess_list)  # filter words that are no longer viable
-        filter_words(word, pattern, answer_list)
-        suggestions = guess_list.copy()
-        letter_frequency = frequency_analysis(guess_list)
-        best_score = 0
-        if len(suggestions) > 8:  # unless we're down to a few possible solutions,
-            for i in guess_list:  # remove words with duplicate letters
-                if len(set(i)) < 5:
-                    suggestions.remove(i)
-        if len(suggestions) == 0:  # if all viable answers contain duplicate letters, the list of suggestions resets
-            suggestions = guess_list.copy()
-        for i in suggestions:
-            score = 0
-            if i in answer_list:
-                score += 50  # guess words in the answer list are more heavily weighted when fewer guess words remain
-            for j in range(5):
-                score += letter_frequency[i[j]][j + 1]  # this is equivalent to the % frequency with which the letter
-            if score > best_score:  # is in a given position multiplied by the number of times
-                best_score = score  # the letter appears in the word list
-                suggestion = i
-
-        print('You should try guessing:', suggestion.upper())
