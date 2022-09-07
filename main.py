@@ -1,6 +1,12 @@
 
+import tkinter as tk
+
+
 ANSWERS = "wordle-answers-alphabetical.txt"     # https://gist.github.com/cfreshman/a03ef2cba789d8cf00c08f767e0fad7b
 GUESSES = "wordle-allowed-guesses.txt"          # https://gist.github.com/cfreshman/cdcdf777450c5b5301e439061d29694c
+GRAY = "#787C7E"
+YELLOW = "#C9B458"
+GREEN = "#6AAA64"
 
 
 # arguments: the word guessed by the user, the pattern of green/yellow/black squares provided by the game, and the list
@@ -81,17 +87,150 @@ def frequency_analysis(wl):
     return lf
 
 
+def click1(event):
+    color = b1["bg"]
+    if color == GRAY:
+        b1["bg"] = YELLOW
+    elif color == YELLOW:
+        b1["bg"] = GREEN
+    elif color == GREEN:
+        b1["bg"] = GRAY
+
+def click2(event):
+    color = b2["bg"]
+    if color == GRAY:
+        b2["bg"] = YELLOW
+    elif color == YELLOW:
+        b2["bg"] = GREEN
+    elif color == GREEN:
+        b2["bg"] = GRAY
+
+def click3(event):
+    color = b3["bg"]
+    if color == GRAY:
+        b3["bg"] = YELLOW
+    elif color == YELLOW:
+        b3["bg"] = GREEN
+    elif color == GREEN:
+        b3["bg"] = GRAY
+
+def click4(event):
+    color = b4["bg"]
+    if color == GRAY:
+        b4["bg"] = YELLOW
+    elif color == YELLOW:
+        b4["bg"] = GREEN
+    elif color == GREEN:
+        b4["bg"] = GRAY
+
+def click5(event):
+    color = b5["bg"]
+    if color == GRAY:
+        b5["bg"] = YELLOW
+    elif color == YELLOW:
+        b5["bg"] = GREEN
+    elif color == GREEN:
+        b5["bg"] = GRAY
+
+
+def callback(*args):
+    result = entry.get().upper()
+    result = result + (' '*(5-len(result)))
+    b1["text"] = result[0]
+    b2["text"] = result[1]
+    b3["text"] = result[2]
+    b4["text"] = result[3]
+    b5["text"] = result[4]
+
+
+def sub(event):
+    colors = [b1["bg"], b2["bg"], b3["bg"], b4["bg"], b5["bg"]]
+    suggestion["text"] = 'You should try: ALAST'
+
+
 if __name__ == '__main__':
-    obj = open(ANSWERS)             # initialize list of answers
+    window = tk.Tk()
+    window.title("Wordle Helper")
+    window.geometry("600x350")
+    b1 = tk.Button(
+        width=3,
+        height=1,
+        bg=GRAY,
+        fg="white",
+        master=window,
+        font="Helvetica 18 bold"
+    )
+    b2 = tk.Button(
+        width=3,
+        height=1,
+        bg=GRAY,
+        fg="white",
+        master=window,
+        font="Helvetica 18 bold"
+    )
+    b3 = tk.Button(
+        width=3,
+        height=1,
+        bg=GRAY,
+        fg="white",
+        master=window,
+        font="Helvetica 18 bold"
+    )
+    b4 = tk.Button(
+        width=3,
+        height=1,
+        bg=GRAY,
+        fg="white",
+        master=window,
+        font="Helvetica 18 bold"
+    )
+    b5 = tk.Button(
+        width=3,
+        height=1,
+        bg=GRAY,
+        fg="white",
+        master=window,
+        font="Helvetica 18 bold"
+    )
+    b1.bind("<Button-1>", click1)
+    b2.bind("<Button-1>", click2)
+    b3.bind("<Button-1>", click3)
+    b4.bind("<Button-1>", click4)
+    b5.bind("<Button-1>", click5)
+    window.grid_columnconfigure((0, 6), weight=1)
+    b1.grid(row=0, column=1, padx=1, pady=30)
+    b2.grid(row=0, column=2, padx=1, pady=30)
+    b3.grid(row=0, column=3, padx=1, pady=30)
+    b4.grid(row=0, column=4, padx=1, pady=30)
+    b5.grid(row=0, column=5, padx=1, pady=30)
+    var = tk.StringVar()
+    entry = tk.Entry(fg="black", bg="white", width=15, textvariable=var)
+    entry.grid(row=1, column=2, pady=5, columnspan=3)
+    var.trace("w", callback)
+    submit = tk.Button(
+        text="submit",
+        width=8,
+        height=1,
+        bg=GRAY,
+        fg="black",
+        master=window)
+    submit.bind("<Button-1>", sub)
+    submit.grid(row=2, column=2, columnspan=3)
+    suggestion = tk.Label(text='Please enter your guess.')
+    suggestion.grid(row=3, column=2, columnspan=3, pady=15)
+    print(entry.get())
+    window.mainloop()
+
+    obj = open(ANSWERS)  # initialize list of answers
     answer_list = obj.readlines()
     obj.close()
-    obj = open(GUESSES)             # initialize list of guesses
+    obj = open(GUESSES)  # initialize list of guesses
     guess_list = obj.readlines()
     obj.close()
-    for i in range(len(guess_list)-1):              # strip each word of the newline character
-        guess_list[i] = guess_list[i][:-1]          # (the last word does not have a newline character)
-    for i in range(len(answer_list)-1):         # strip each word of the newline character, and add the
-        answer_list[i] = answer_list[i][:-1]    # list of answers to the list of possible guesses
+    for i in range(len(guess_list) - 1):  # strip each word of the newline character
+        guess_list[i] = guess_list[i][:-1]  # (the last word does not have a newline character)
+    for i in range(len(answer_list) - 1):  # strip each word of the newline character, and add the
+        answer_list[i] = answer_list[i][:-1]  # list of answers to the list of possible guesses
         guess_list.append(answer_list[i])
 
     print('Welcome to Wordle Helper!')
@@ -99,25 +238,25 @@ if __name__ == '__main__':
         word = input('What was your guess?\n').lower()
         pattern = input('What was the color pattern? For example, if the first letter was green, the second was yellow,'
                         ' and the other three were black, you would type GYBBB:\n').lower()
-        filter_words(word, pattern, guess_list)     # filter words that are no longer viable
+        filter_words(word, pattern, guess_list)  # filter words that are no longer viable
         filter_words(word, pattern, answer_list)
         suggestions = guess_list.copy()
         letter_frequency = frequency_analysis(guess_list)
         best_score = 0
-        if len(suggestions) > 8:            # unless we're down to a few possible solutions,
-            for i in guess_list:            # remove words with duplicate letters
+        if len(suggestions) > 8:  # unless we're down to a few possible solutions,
+            for i in guess_list:  # remove words with duplicate letters
                 if len(set(i)) < 5:
                     suggestions.remove(i)
-        if len(suggestions) == 0:   # if all viable answers contain duplicate letters, the list of suggestions resets
+        if len(suggestions) == 0:  # if all viable answers contain duplicate letters, the list of suggestions resets
             suggestions = guess_list.copy()
         for i in suggestions:
             score = 0
             if i in answer_list:
-                score += 50    # guess words in the answer list are more heavily weighted when fewer guess words remain
+                score += 50  # guess words in the answer list are more heavily weighted when fewer guess words remain
             for j in range(5):
-                score += letter_frequency[i[j]][j+1]    # this is equivalent to the % frequency with which the letter
-            if score > best_score:                      # is in a given position multiplied by the number of times
-                best_score = score                      # the letter appears in the word list
+                score += letter_frequency[i[j]][j + 1]  # this is equivalent to the % frequency with which the letter
+            if score > best_score:  # is in a given position multiplied by the number of times
+                best_score = score  # the letter appears in the word list
                 suggestion = i
 
         print('You should try guessing:', suggestion.upper())
